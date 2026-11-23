@@ -1,0 +1,307 @@
+<Window x:Class="Nofi.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nofi — сервис уведомлений" Width="1250" Height="780" MinWidth="1000" MinHeight="660"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource CanvasBrush}"
+        FontFamily="Segoe UI" FontSize="14" Language="ru-RU" UseLayoutRounding="True"
+        Loaded="WindowLoaded" Closing="WindowClosing">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="208" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{StaticResource SidebarBrush}" Padding="16,25,16,22">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,8,34">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="36" Height="36" Background="{StaticResource AccentBrush}" CornerRadius="8">
+                            <TextBlock Text="N" Foreground="White" FontSize="20" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Nofi" Foreground="White" FontSize="27" FontWeight="SemiBold"
+                                   Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Сервис уведомлений" Foreground="{StaticResource SidebarMutedBrush}"
+                               Margin="0,8,0,0" FontSize="13" />
+                </StackPanel>
+                <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource SidebarActiveBrush}"
+                        BorderThickness="0,1,0,0" Padding="8,15,8,0">
+                    <TextBlock Text="Имитация email и SMS" Foreground="{StaticResource SidebarMutedBrush}"
+                               FontSize="13" TextWrapping="Wrap" />
+                </Border>
+                <ListBox x:Name="Navigation" Background="Transparent" BorderThickness="0" SelectedIndex="0"
+                         AutomationProperties.Name="Разделы приложения"
+                         ItemContainerStyle="{StaticResource NavItem}" SelectionChanged="NavigationChanged">
+                    <ListBoxItem Content="Расписание" />
+                    <ListBoxItem Content="Журнал" />
+                    <ListBoxItem Content="Настройки" />
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border x:Name="StorageBanner" Margin="28,18,28,0" Padding="12,7"
+                    Background="{StaticResource WarnSoftBrush}" CornerRadius="8" Visibility="Collapsed">
+                <DockPanel>
+                    <Button x:Name="ReconnectButton" DockPanel.Dock="Right" Content="Подключить снова"
+                            Margin="12,0,0,0" Click="ReconnectClicked" />
+                    <TextBlock x:Name="StorageMessage" Foreground="{StaticResource WarnBrush}"
+                               VerticalAlignment="Center" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="28,22,28,20">
+                <Grid x:Name="ScheduleView">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Margin="0,0,0,20">
+                        <Button x:Name="AddButton" DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}"
+                                Content="＋ Добавить задачу" VerticalAlignment="Center" Click="AddClicked"
+                                AutomationProperties.Name="Добавить задачу" />
+                        <StackPanel>
+                            <TextBlock Text="Расписание" Style="{StaticResource Heading}" />
+                            <TextBlock Text="Задачи отправки уведомлений" Style="{StaticResource MutedText}" Margin="0,3,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}" Margin="0,0,8,0" Padding="16,10">
+                            <StackPanel>
+                                <TextBlock Text="Всего задач" Style="{StaticResource MutedText}" />
+                                <TextBlock x:Name="TotalTasks" Text="0" Style="{StaticResource MetricValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="4,0" Padding="16,10">
+                            <StackPanel>
+                                <TextBlock Text="Активные" Style="{StaticResource MutedText}" />
+                                <TextBlock x:Name="ActiveTasks" Text="0" Style="{StaticResource MetricValue}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Margin="8,0,0,0" Padding="16,10">
+                            <StackPanel>
+                                <TextBlock Text="Ожидают повтора" Style="{StaticResource MutedText}" />
+                                <TextBlock x:Name="RetryTasks" Text="0" Style="{StaticResource MetricValue}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top" Margin="14,9,12,9">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button x:Name="EditButton" Content="Изменить" Margin="0,0,8,0" Click="EditClicked" />
+                                    <Button x:Name="ToggleButton" Content="Выключить" Margin="0,0,8,0" Click="ToggleClicked" />
+                                    <Button x:Name="DeleteButton" Content="Удалить" Style="{StaticResource DangerButton}"
+                                            Click="DeleteClicked" />
+                                </StackPanel>
+                                <TextBlock Text="Задачи" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <Grid>
+                                <DataGrid x:Name="TaskGrid" SelectionChanged="TaskSelectionChanged" CanUserSortColumns="False"
+                                          AutomationProperties.Name="Задачи уведомлений">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Получатель" Binding="{Binding Recipient}" Width="1.3*"
+                                                            ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="Канал" Binding="{Binding Channel}" Width="70"
+                                                            ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="Расписание" Binding="{Binding Schedule}" Width="1.45*">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource TableText}">
+                                                    <Setter Property="ToolTip" Value="{Binding ScheduleDetails}" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTemplateColumn Header="Статус" Width="1.35*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Status}" Style="{StaticResource StatusLabel}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Следующий запуск" Binding="{Binding NextRun}" Width="1.3*"
+                                                            ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="Последняя попытка" Binding="{Binding LastRun}" Width="1.3*"
+                                                            ElementStyle="{StaticResource TableText}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <StackPanel x:Name="TaskEmpty" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="0,52,0,0" IsHitTestVisible="False">
+                                    <TextBlock Text="Пока нет задач" Style="{StaticResource SectionTitle}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Добавьте первое уведомление и укажите время отправки."
+                                               Style="{StaticResource MutedText}" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="JournalView" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Журнал" Style="{StaticResource Heading}" />
+                        <TextBlock Text="История попыток отправки" Style="{StaticResource MutedText}" Margin="0,3,0,0" />
+                    </StackPanel>
+                    <Border Grid.Row="1" Style="{StaticResource Card}" Padding="13" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="1.25*" />
+                                <ColumnDefinition Width="112" />
+                                <ColumnDefinition Width="112" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,8,0">
+                                <Label Content="Задача" Target="{Binding ElementName=TaskFilter}" />
+                                <ComboBox x:Name="TaskFilter" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectionChanged="JournalFilterChanged" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                <Label Content="Результат" Target="{Binding ElementName=OutcomeFilter}" />
+                                <ComboBox x:Name="OutcomeFilter" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectionChanged="JournalFilterChanged" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                <Label Content="С даты" Target="{Binding ElementName=StartFilter}" />
+                                <DatePicker x:Name="StartFilter" SelectedDateChanged="JournalFilterChanged" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Margin="0,0,8,0">
+                                <Label Content="По дату" Target="{Binding ElementName=EndFilter}" />
+                                <DatePicker x:Name="EndFilter" SelectedDateChanged="JournalFilterChanged" />
+                            </StackPanel>
+                            <Button Grid.Column="4" Content="Сбросить" MinHeight="38" VerticalAlignment="Bottom" Click="ResetFiltersClicked" />
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top" Margin="14,12">
+                                <TextBlock x:Name="JournalCount" DockPanel.Dock="Right" Style="{StaticResource MutedText}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Попытки отправки" Style="{StaticResource SectionTitle}" />
+                            </DockPanel>
+                            <Expander x:Name="JournalDetails" DockPanel.Dock="Bottom" Header="Детали попытки"
+                                      Margin="14,8" Visibility="Collapsed">
+                                <ScrollViewer MaxHeight="130" VerticalScrollBarVisibility="Auto">
+                                    <TextBlock x:Name="JournalDetailText" Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                </ScrollViewer>
+                            </Expander>
+                            <Grid>
+                                <DataGrid x:Name="JournalGrid" CanUserSortColumns="False" AutomationProperties.Name="Журнал попыток"
+                                          SelectionChanged="JournalSelectionChanged">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Время" Binding="{Binding Time}" Width="1.15*" ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="Получатель" Binding="{Binding Recipient}" Width="1.1*" ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="Канал" Binding="{Binding Channel}" Width="64" ElementStyle="{StaticResource TableText}" />
+                                        <DataGridTextColumn Header="№" Binding="{Binding Attempt}" Width="45" />
+                                        <DataGridTemplateColumn Header="Результат" Width="1.3*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Result}" Style="{StaticResource StatusLabel}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Примечание" Binding="{Binding Details}" Width="1.65*" ElementStyle="{StaticResource TableText}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock x:Name="JournalEmpty" Text="Попыток пока нет." Style="{StaticResource MutedText}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,46,0,0" IsHitTestVisible="False" />
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="SettingsView" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Настройки" Style="{StaticResource Heading}" />
+                        <TextBlock Text="Правила планировщика и сценарии имитации" Style="{StaticResource MutedText}" Margin="0,3,0,0" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,8,0">
+                                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Повторные попытки" Style="{StaticResource SectionTitle}" Margin="0,0,0,12" />
+                                        <Label Content="Лимит попыток" Target="{Binding ElementName=MaxAttempts}" />
+                                        <TextBox x:Name="MaxAttempts" MaxLength="2" Margin="0,0,0,10" />
+                                        <Label Content="Базовая задержка, сек" Target="{Binding ElementName=RetryDelay}" />
+                                        <TextBox x:Name="RetryDelay" MaxLength="5" Margin="0,0,0,10" />
+                                        <Label Content="Коэффициент роста" Target="{Binding ElementName=RetryFactor}" />
+                                        <TextBox x:Name="RetryFactor" MaxLength="12" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource Card}">
+                                    <StackPanel>
+                                        <TextBlock Text="Планировщик" Style="{StaticResource SectionTitle}" Margin="0,0,0,12" />
+                                        <Label Content="Интервал опроса, мс" Target="{Binding ElementName=PollInterval}" />
+                                        <TextBox x:Name="PollInterval" MaxLength="5" Margin="0,0,0,10" />
+                                        <Label Content="Пропущенные повторяющиеся запуски" Target="{Binding ElementName=MissedRuns}" />
+                                        <ComboBox x:Name="MissedRuns" DisplayMemberPath="Label" SelectedValuePath="Value" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <TextBlock Text="Имитация отправки" Style="{StaticResource SectionTitle}" Margin="0,0,0,12" />
+                                    <Label Content="Вероятность временного сбоя, %" Target="{Binding ElementName=FailurePercent}" />
+                                    <TextBox x:Name="FailurePercent" MaxLength="3" Margin="0,0,0,10" />
+                                    <Label Content="Задержка имитации, мс" Target="{Binding ElementName=SimulationDelay}" />
+                                    <TextBox x:Name="SimulationDelay" MaxLength="4" Margin="0,0,0,10" />
+                                    <Label Content="Количество первых неудачных попыток" Target="{Binding ElementName=FirstFailures}" />
+                                    <TextBox x:Name="FirstFailures" MaxLength="2" Margin="0,0,0,10" />
+                                    <Label Content="Получатель с принудительным сбоем" Target="{Binding ElementName=ForcedRecipient}" />
+                                    <TextBox x:Name="ForcedRecipient" MaxLength="254" />
+                                    <CheckBox x:Name="PermanentFailure" Content="Принудительный сбой — постоянный" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                    <DockPanel Grid.Row="2" Margin="0,12,0,0">
+                        <Button x:Name="SaveSettingsButton" DockPanel.Dock="Right" Content="Сохранить настройки"
+                                Style="{StaticResource PrimaryButton}" Click="SaveSettingsClicked" />
+                        <TextBlock x:Name="SettingsFeedback" Margin="0,0,12,0" VerticalAlignment="Center" TextWrapping="Wrap"
+                                   AutomationProperties.LiveSetting="Polite" />
+                    </DockPanel>
+                </Grid>
+            </Grid>
+
+            <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" Padding="28,8"
+                    BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+                <DockPanel>
+                    <Button x:Name="PauseButton" DockPanel.Dock="Right" Content="Пауза планировщика" Click="PauseClicked" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse x:Name="SchedulerDot" Width="9" Height="9" Fill="{StaticResource MutedBrush}" Margin="0,0,8,0" />
+                        <TextBlock x:Name="SchedulerState" Text="Загрузка хранилища" FontWeight="SemiBold" />
+                        <TextBlock x:Name="ActiveSummary" Margin="20,0,0,0" Style="{StaticResource MutedText}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
